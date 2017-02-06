@@ -1,9 +1,8 @@
-#!/usr/bin/env python3.5
+#!/usr/bin/env python3
 
 from configparser import ConfigParser
 import paho.mqtt.client as mqtt
 import json
-from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # Read-in config
@@ -52,14 +51,14 @@ class InternalRequestHandler(BaseHTTPRequestHandler):
         return payload
 
     def _exit_failure(self):
-        self.send_response(HTTPStatus.BAD_REQUEST)
+        self.send_response(400)  # Invalid
         self.send_header('Content-type', 'text/html')
         self.end_headers()
         self.wfile.write(bytes("Nope.", 'utf8'))
         return
 
     def do_GET(self):
-        self.send_response(HTTPStatus.METHOD_NOT_ALLOWED)
+        self.send_response(405)  # Method not allowed
         self.send_header('Content-type', 'text/html')
         self.end_headers()
         self.wfile.write(bytes("Please use POST.", 'utf8'))
@@ -84,7 +83,7 @@ class InternalRequestHandler(BaseHTTPRequestHandler):
             self._mqtt_client.publish(config['mqtt'].get('topic', 'default/topic'),
                                       json.dumps(data))
 
-        self.send_response(HTTPStatus.OK)
+        self.send_response(200)  # OK
         self.send_header('Content-type', 'text/html')
         self.end_headers()
         self.wfile.write(bytes("Ok.", 'utf8'))
